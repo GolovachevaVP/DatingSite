@@ -14,7 +14,7 @@ public class PreferencesButton {
 
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
-        message.setText("Кого вы ищите?");
+        message.setText("Кого Вы ищите?");
 
         InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();

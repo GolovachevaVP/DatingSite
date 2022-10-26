@@ -120,12 +120,12 @@ public void sendPhoto(long chatId)throws IOException,TelegramApiException{
         SendPhoto sendPhoto=new SendPhoto();
         if(dataBase.getState()==BotStateEnum.ASK_PREFERENCES){
         sendPhoto.setReplyMarkup(getMainMenuKeyboard());
-        image.getQuestionnaire(dataBase);
+        image.getQuestionnaire(chatId,dataBase);
         }
         if (dataBase.getState()==BotStateEnum.SHOWING_QUESTIONNAIRE){
             sendPhoto.setReplyMarkup(getQuestionnaireKeyboard());
         }
-        File image= ResourceUtils.getFile("src/main/resources/questionnaire.png");
+        File image= ResourceUtils.getFile("src/main/resources/questionnaires/questionnaire"+chatId+".png");
         sendPhoto.setPhoto(new InputFile(image));
         sendPhoto.setChatId(String.valueOf(chatId));
         sendPhoto.setCaption(dataBase.getGender().getGenType()+", "+dataBase.getName());
