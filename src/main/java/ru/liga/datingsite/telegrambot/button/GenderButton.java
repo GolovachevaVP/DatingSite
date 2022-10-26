@@ -41,12 +41,8 @@ public class GenderButton {
     }
 
 
-
-
     public static String getButtonName(CallbackQuery buttonQuery){
         return buttonQuery.getData();
-
     }
-
 
 }

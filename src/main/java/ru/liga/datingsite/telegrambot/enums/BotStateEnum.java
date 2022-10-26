@@ -1,6 +1,7 @@
 package ru.liga.datingsite.telegrambot.enums;
 
-/**Возможные состояния бота
+/**
+ * Возможные состояния бота
  */
 
 public enum BotStateEnum {
@@ -8,6 +9,12 @@ public enum BotStateEnum {
     ASK_NAME,
     ASK_DESCRIPTION,
     ASK_PREFERENCES,
+    MENU,
+    SEARCH,
+    QUESTIONNAIRE,
+    SHOWING_QUESTIONNAIRE,
+    CHANGE_QUESTIONNAIRE,
+    FAVOURITE
 
-    MENU
+
 }

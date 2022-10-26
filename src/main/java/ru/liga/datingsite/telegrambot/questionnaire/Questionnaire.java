@@ -1,5 +1,6 @@
 package ru.liga.datingsite.telegrambot.questionnaire;
 
+import lombok.extern.slf4j.Slf4j;
 import ru.liga.datingsite.telegrambot.DataBase;
 
 import javax.imageio.ImageIO;
@@ -9,7 +10,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-
+import java.util.List;
+@Slf4j
 public class Questionnaire {
     private static final int HEADER = 0;
     private static final int DESCRIPTION = 1;
@@ -18,15 +20,45 @@ public class Questionnaire {
     public void getQuestionnaire(DataBase dataBase) throws IOException {
         BufferedImage image = ImageIO.read(new File("src/main/resources/prerev-background.jpg"));
 
-        ArrayList<String> text = changeDescription(dataBase.getDescription());
+        List<String> text = changeDescription(dataBase.getDescription());
 
         Font fontHead = new Font("Old Standard TT", Font.BOLD, 100);
-        Font fontDescr = new Font("Old Standard TT", Font.PLAIN, 18);
+        Font fontDescr = new Font("Old Standard TT", Font.PLAIN, 40);
 
-        Font fontHeader = fontCreateFontToFit(fontHead, text.get(HEADER), image);
-         addTextToImage(text, fontHeader,fontDescr, image);
+       // Font fontHeader = fontCreateFontToFit(fontHead, text.get(HEADER), image);
+        List<String> lines = addTextToImage(text, fontDescr, image);
 
-//        Font fontDescription = fontCreateFontToFit(fontDescr, text.get(DESCRIPTION), image);
+        String result="";
+        for(String str1: lines){
+            result = str1 + "\n";
+        }
+
+        //Font fontDescription = fontCreateFontToFit(fontDescr, result, image);
+
+
+
+        Graphics g = image.createGraphics();
+        g.setFont(fontDescr);
+        final FontMetrics fontMetrics = g.getFontMetrics();
+
+        int lineHeight = fontMetrics.getHeight();
+        int linesHeight = lineHeight*lines.size();
+        if(linesHeight>image.getHeight()-lineHeight){
+            log.error("текст больше картинки");
+
+
+        }
+        for (int i = 0; i < lines.size(); i++) {
+                g.setFont(fontDescr);
+                g.setColor(Color.BLACK);
+                g.drawString(lines.get(i), 20, (lineHeight + i * lineHeight));
+
+
+        }
+
+
+
+        g.dispose();
 //
 //       // ArrayList<String> res = addTextToImage(text, fontDescription, image);
         ImageIO.write(image, "png", new File("src/main/resources/questionnaire.png"));
@@ -61,74 +93,51 @@ public class Questionnaire {
     }
 
 
-    public void addTextToImage(ArrayList<String> text,Font fontHeader, Font fontDescription, BufferedImage image) {
-        Graphics gHeader = image.createGraphics();
-        gHeader.setFont(fontHeader);
-        final FontMetrics fontMetricsHeader = gHeader.getFontMetrics();
+    public List<String> addTextToImage(List<String> text, Font font, BufferedImage image) {
+        Graphics g = image.createGraphics();
+        g.setFont(font);
+        final FontMetrics fontMetrics = g.getFontMetrics();
 
-        Graphics gDescription = image.createGraphics();
-        gDescription.setFont(fontDescription);
-        final FontMetrics fontMetricsDescription = gDescription.getFontMetrics();
+        List<String> lines = new ArrayList<>();
+        int lineHeight = fontMetrics.getHeight();
 
-        ArrayList<String> lines = new ArrayList<>();
-        int lineHeightHeader = fontMetricsHeader.getHeight();
-        int lineHeightDescription = fontMetricsDescription.getHeight();
+        for (String str : text) {
+            String[] words = str.split(" ");
+            String line = "";
 
-        for (int i=0; i<text.size(); i++) {
-            if (i == 0) {
-                String[] words = text.get(i).split(" ");
-                String line = "";
-
-                for (int j = 0; j < words.length; i++) {
-                    if (fontMetricsHeader.stringWidth(line + words[j]) > image.getWidth() - 40) {
-                        lines.add(line);
-                        line = "";
-                    }
-
-                    line += words[j] + " ";
+            for (int i = 0; i < words.length; i++) {
+                if (fontMetrics.stringWidth(line + words[i]) > image.getWidth()-20) {
+                    lines.add(line);
+                    line = "";
                 }
 
-                lines.add(line);
-            } else {
-                String[] words = text.get(i).split(" ");
-                String line = "";
-
-                for (int k = 0; k < words.length; i++) {
-                    if (fontMetricsHeader.stringWidth(line + words[k]) > image.getWidth() - 40) {
-                        lines.add(line);
-                        line = "";
-                    }
-
-                    line += words[k] + " ";
-                }
-
-                lines.add(line);
+                line += words[i] + " ";
             }
+           lines.add(line);
         }
 
-
-        for (int i = 0; i < lines.size(); i++) {
-            if(i==0){
-                gHeader.setFont(fontHeader);
-                gHeader.setColor(Color.BLACK);
-                gHeader.drawString(lines.get(i), 20,  lineHeightHeader);
-            } else {
-                gDescription.setFont(fontDescription);
-                gDescription.setColor(Color.BLACK);
-                gDescription.drawString(lines.get(i), 20, (lineHeightDescription + i * lineHeightDescription));
-            }
-        }
-        gHeader.dispose();
-        gDescription.dispose();
+//        for (int i = 0; i < lines.size(); i++) {
+//            if(i==0){
+//                g.setFont(font);
+//                g.setColor(Color.BLACK);
+//                g.drawString(lines.get(i), 20,  lineHeight);
+//            } else {
+//                g.setFont(font);
+//                g.setColor(Color.BLACK);
+//                g.drawString(lines.get(i), 20, (lineHeight + i * lineHeight));
+//            }
+//        }
+//        g.dispose();
         //ImageIO.write(image, "png", new File("src/main/resources/questionnaire.png"));
 
+        return lines;
     }
 
-    public static ArrayList<String> changeDescription(String text) {
+    public static List<String> changeDescription(String text) {
         String[] descriptionMultiLine = text.split("\\.");
         String heading;
         String description = "";
-        ArrayList<String> result = new ArrayList<>();
+        List<String> result = new ArrayList<>();
         if (descriptionMultiLine.length > 1) {
             heading = descriptionMultiLine[HEADER] + ".";
             result.add(heading);

@@ -43,13 +43,4 @@ public class PreferencesButton {
         return message;
     }
 
-
-
-
-    public static String getButtonName(CallbackQuery buttonQuery){
-        return buttonQuery.getData();
-
-    }
-
-
 }

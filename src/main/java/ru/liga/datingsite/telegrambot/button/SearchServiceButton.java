@@ -1,8 +1,5 @@
 package ru.liga.datingsite.telegrambot.button;
 
-import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
@@ -10,11 +7,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
-public class MainMenuService {
+public class SearchServiceButton {
 
-
-    public static ReplyKeyboardMarkup getMainMenuKeyboard() {
+    public static ReplyKeyboardMarkup getSearchKeyboard() {
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setSelective(true);
         replyKeyboardMarkup.setResizeKeyboard(true);
@@ -25,9 +20,9 @@ public class MainMenuService {
         KeyboardRow row1 = new KeyboardRow();
         KeyboardRow row2 = new KeyboardRow();
         KeyboardRow row3 = new KeyboardRow();
-        row1.add(new KeyboardButton("Поиск"));
-        row2.add(new KeyboardButton("Анкета"));
-        row3.add(new KeyboardButton("Любимцы"));
+        row1.add(new KeyboardButton("Вправо"));
+        row2.add(new KeyboardButton("Влево"));
+        row3.add(new KeyboardButton("Меню"));
         keyboard.add(row1);
         keyboard.add(row2);
         keyboard.add(row3);
