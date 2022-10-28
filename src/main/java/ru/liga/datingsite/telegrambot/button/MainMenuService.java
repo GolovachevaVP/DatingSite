@@ -18,7 +18,7 @@ public class MainMenuService {
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setSelective(true);
         replyKeyboardMarkup.setResizeKeyboard(true);
-        replyKeyboardMarkup.setOneTimeKeyboard(false);
+        replyKeyboardMarkup.setOneTimeKeyboard(true);
 
         List<KeyboardRow> keyboard = new ArrayList<>();
 

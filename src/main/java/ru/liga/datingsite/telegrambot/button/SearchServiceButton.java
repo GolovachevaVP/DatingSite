@@ -1,6 +1,8 @@
 package ru.liga.datingsite.telegrambot.button;
 
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
@@ -9,26 +11,30 @@ import java.util.List;
 
 public class SearchServiceButton {
 
-    public static ReplyKeyboardMarkup getSearchKeyboard() {
-        final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-        replyKeyboardMarkup.setSelective(true);
-        replyKeyboardMarkup.setResizeKeyboard(true);
-        replyKeyboardMarkup.setOneTimeKeyboard(false);
+    public static InlineKeyboardMarkup  getSearchInlineKeyboardMarkup () {
 
-        List<KeyboardRow> keyboard = new ArrayList<>();
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine = new ArrayList<>();
 
-        KeyboardRow row1 = new KeyboardRow();
-        KeyboardRow row2 = new KeyboardRow();
-        KeyboardRow row3 = new KeyboardRow();
-        row1.add(new KeyboardButton("Вправо"));
-        row2.add(new KeyboardButton("Влево"));
-        row3.add(new KeyboardButton("Меню"));
-        keyboard.add(row1);
-        keyboard.add(row2);
-        keyboard.add(row3);
-        replyKeyboardMarkup.setKeyboard(keyboard);
-        return replyKeyboardMarkup;
+        InlineKeyboardButton RightButton = new InlineKeyboardButton();
+        RightButton.setText("Вправо");
+        RightButton.setCallbackData("Поиск_Вправо");
+
+        InlineKeyboardButton LeftButton = new InlineKeyboardButton();
+        LeftButton.setText("Влево");
+        LeftButton.setCallbackData("Поиск_Влево");
+
+        InlineKeyboardButton MenuButton = new InlineKeyboardButton();
+        MenuButton.setText("Меню");
+        MenuButton.setCallbackData("Меню");
+
+        rowInLine.add(LeftButton);
+        rowInLine.add(MenuButton);
+        rowInLine.add(RightButton);
+
+        rowsInLine.add(rowInLine);
+        markupInLine.setKeyboard(rowsInLine);
+        return markupInLine;
     }
-
-
 }

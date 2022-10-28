@@ -22,13 +22,17 @@ import ru.liga.datingsite.telegrambot.questionnaire.Questionnaire;
 import java.io.File;
 import java.io.IOException;
 
+import static ru.liga.datingsite.telegrambot.button.FavouriteServiceButton.getFavouriteInlineKeyboardMarkup;
 import static ru.liga.datingsite.telegrambot.button.GenderButton.createGengerButtons;
 import static ru.liga.datingsite.telegrambot.button.GenderButton.getButtonName;
 import static ru.liga.datingsite.telegrambot.button.MainMenuService.getMainMenuKeyboard;
 import static ru.liga.datingsite.telegrambot.button.PreferencesButton.createPreferencesButtons;
 import static ru.liga.datingsite.telegrambot.button.QuestionnaireServiceButton.getQuestionnaireKeyboard;
+import static ru.liga.datingsite.telegrambot.button.SearchServiceButton.getSearchInlineKeyboardMarkup;
 import static ru.liga.datingsite.telegrambot.menu.Menu.usingMenu;
+import static ru.liga.datingsite.telegrambot.menu.MenuFavourite.usingMenuFavourite;
 import static ru.liga.datingsite.telegrambot.menu.MenuQuestionnaire.usingMenuQuestionnaire;
+import static ru.liga.datingsite.telegrambot.menu.MenuSearch.usingMenuSearch;
 
 
 @Slf4j
@@ -38,6 +42,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     DataBase dataBase = new DataBase();
     Questionnaire image = new Questionnaire();
+    int idSearch = 1;
+    int idFavourite = 1;
 
 
     private final BotConfig botConfig;
@@ -68,15 +74,37 @@ public class TelegramBot extends TelegramLongPollingBot {
                 chatId = callbackQuery.getMessage().getChatId();
             }
 
-            if (dataBase.getState() == BotStateEnum.MENU || messageText.equals("Меню")) {
+            if (dataBase.getState() == BotStateEnum.MENU || messageText.equalsIgnoreCase("Меню")) {
                 execute(usingMenu(chatId, messageText, dataBase));
-            }
-            if (dataBase.getState() == BotStateEnum.QUESTIONNAIRE || messageText.equals("Анкета")) {
+            } else if (dataBase.getState() == BotStateEnum.QUESTIONNAIRE) {
                 execute(usingMenuQuestionnaire(chatId, messageText, dataBase));
             }
             if (dataBase.getState() == BotStateEnum.SHOWING_QUESTIONNAIRE) {
                 sendPhoto(chatId);
                 dataBase.setState(BotStateEnum.QUESTIONNAIRE);
+            }
+            if (dataBase.getState() == BotStateEnum.SEARCH) {
+                CallbackQuery callbackQuery = update.getCallbackQuery();
+                if (update.hasCallbackQuery()) {
+                    idSearch = usingMenuSearch(getButtonName(callbackQuery), dataBase, idSearch, chatId);
+                }
+                if (dataBase.getState() != BotStateEnum.MENU) {
+                    sendQuestionnaireSearch(chatId, idSearch);
+                } else {
+                    execute(usingMenu(chatId, getButtonName(callbackQuery), dataBase));
+                }
+            }
+
+            if (dataBase.getState() == BotStateEnum.FAVOURITE) {
+                CallbackQuery callbackQuery = update.getCallbackQuery();
+                if (update.hasCallbackQuery()) {
+                    idFavourite = usingMenuFavourite(getButtonName(callbackQuery), dataBase, idFavourite);
+                }
+                if (dataBase.getState() != BotStateEnum.MENU) {
+                    sendQuestionnaireFavourite(chatId, idFavourite);
+                } else {
+                    execute(usingMenu(chatId, getButtonName(callbackQuery), dataBase));
+                }
             }
 
             if (dataBase.getState() == null && messageText.equals("/start")
@@ -107,29 +135,51 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
 
-public void sendMessage(long chatId,String textToSend){
-        SendMessage message=new SendMessage(String.valueOf(chatId),textToSend);
-        try{
-        execute(message);
-        }catch(TelegramApiException e){
-        log.error("Ошибка при попытке отправки сообщения");
+    public void sendMessage(long chatId, String textToSend) {
+        SendMessage message = new SendMessage(String.valueOf(chatId), textToSend);
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            log.error("Ошибка при попытке отправки сообщения");
         }
-        }
+    }
 
-public void sendPhoto(long chatId)throws IOException,TelegramApiException{
-        SendPhoto sendPhoto=new SendPhoto();
-        if(dataBase.getState()==BotStateEnum.ASK_PREFERENCES){
-        sendPhoto.setReplyMarkup(getMainMenuKeyboard());
-        image.getQuestionnaire(chatId,dataBase);
+    public void sendPhoto(long chatId) throws IOException, TelegramApiException {
+        SendPhoto sendPhoto = new SendPhoto();
+        if (dataBase.getState() == BotStateEnum.ASK_PREFERENCES) {
+            sendPhoto.setReplyMarkup(getMainMenuKeyboard());
+            image.getQuestionnaire(chatId, dataBase);
+            sendPhoto.setCaption(dataBase.getGender().getGenType() + ", " + dataBase.getName());
         }
-        if (dataBase.getState()==BotStateEnum.SHOWING_QUESTIONNAIRE){
+        if (dataBase.getState() == BotStateEnum.SHOWING_QUESTIONNAIRE) {
             sendPhoto.setReplyMarkup(getQuestionnaireKeyboard());
+            sendPhoto.setCaption("Ваша анкета");
         }
-        File image= ResourceUtils.getFile("src/main/resources/questionnaires/questionnaire"+chatId+".png");
+        File image = ResourceUtils.getFile("src/main/resources/questionnaires/questionnaire" + chatId + ".png");
         sendPhoto.setPhoto(new InputFile(image));
         sendPhoto.setChatId(String.valueOf(chatId));
-        sendPhoto.setCaption(dataBase.getGender().getGenType()+", "+dataBase.getName());
         execute(sendPhoto);
-        }
-        }
+    }
+
+    public void sendQuestionnaireSearch(long chatId, int id) throws IOException, TelegramApiException {
+        SendPhoto sendPhoto = new SendPhoto();
+        File image = ResourceUtils.getFile("src/main/resources/questionnaires/questionnaire" + id + ".png");
+        sendPhoto.setPhoto(new InputFile(image));
+        sendPhoto.setChatId(String.valueOf(chatId));
+        sendPhoto.setCaption("Претендент №" + id);
+        sendPhoto.setReplyMarkup(getSearchInlineKeyboardMarkup());
+        execute(sendPhoto);
+    }
+
+    public void sendQuestionnaireFavourite(long chatId, int id) throws IOException, TelegramApiException {
+        SendPhoto sendPhoto = new SendPhoto();
+        File image = ResourceUtils.getFile("src/main/resources/questionnaires/favourite/questionnaire"
+                + id + chatId+ ".png");
+        sendPhoto.setPhoto(new InputFile(image));
+        sendPhoto.setChatId(String.valueOf(chatId));
+        sendPhoto.setCaption("Претендент №" + id);
+        sendPhoto.setReplyMarkup(getFavouriteInlineKeyboardMarkup());
+        execute(sendPhoto);
+    }
+}
 

@@ -17,14 +17,19 @@ public class Questionnaire {
     private static final int DESCRIPTION = 1;
 
     public void getQuestionnaire(long chatId, DataBase dataBase) throws IOException {
-        Font fontHeader = new Font("Old Standard TT", Font.BOLD, 100);
+        int fontHeaderSize = 48;
         int fontDescriptionSize = 40;
         boolean textDoesNotFit = true;
         while (textDoesNotFit) {
-            textDoesNotFit = saveQuestionnaire(chatId, dataBase, fontHeader, new Font("Old Standard TT", Font.PLAIN, fontDescriptionSize));
+            textDoesNotFit = saveQuestionnaire(chatId, dataBase,
+                    new Font("Old Standard TT", Font.BOLD, fontHeaderSize),
+                    new Font("Old Standard TT", Font.PLAIN, fontDescriptionSize));
+
             fontDescriptionSize -= 1;
+            fontHeaderSize -= 1;
         }
-        log.error("шрифт" +(++fontDescriptionSize));
+        log.error("шрифт" + (++fontDescriptionSize));
+        log.error("шрифт заголовка" + (++fontHeaderSize));
     }
 
 
@@ -34,25 +39,36 @@ public class Questionnaire {
         List<String> text = changeDescription(dataBase.getDescription());
 
 
-        List<String> lines = addTextToImage(text, fontDescription, image);
+        List<String> linesHeader = addHeaderToImage(text, fontHeader, image);
+        List<String> linesDescription = addDescriptionToImage(text, fontDescription, image);
 
         Graphics g = image.createGraphics();
         g.setFont(fontDescription);
-        final FontMetrics fontMetrics = g.getFontMetrics();
+        final FontMetrics fontMetricsDescription = g.getFontMetrics();
+        int lineHeightDescription = fontMetricsDescription.getHeight();
 
-        int lineHeight = fontMetrics.getHeight();
-        int linesHeight = lineHeight * lines.size();
-        if (linesHeight > image.getHeight() - lineHeight) {
+        g.setFont(fontHeader);
+        final FontMetrics fontMetricsHeader = g.getFontMetrics();
+        int lineHeightHeader = fontMetricsHeader.getHeight();
+
+        int linesHeight = lineHeightHeader * linesHeader.size() + lineHeightDescription * linesDescription.size();
+        if (linesHeight > image.getHeight() - lineHeightDescription - 30) {
             log.error("текст больше картинки");
             return true;
         }
 
-
-        for (int i = 0; i < lines.size(); i++) {
-            g.setFont(fontDescription);
+        for (int i = 0; i < linesHeader.size(); i++) {
             g.setColor(Color.BLACK);
-            g.drawString(lines.get(i), 20, (lineHeight + i * lineHeight));
+            g.setFont(fontHeader);
+            g.drawString(linesHeader.get(i), 50, (30 + lineHeightHeader + i * lineHeightHeader));
         }
+        int indent = 35 + linesHeader.size() * lineHeightHeader;
+        for (int i = 0; i < linesDescription.size(); i++) {
+            g.setColor(Color.BLACK);
+            g.setFont(fontDescription);
+            g.drawString(linesDescription.get(i), 50, (indent + lineHeightDescription + i * lineHeightDescription));
+        }
+
 
         g.dispose();
         ImageIO.write(image, "png",
@@ -62,33 +78,49 @@ public class Questionnaire {
     }
 
 
-    public List<String> addTextToImage(List<String> text, Font font, BufferedImage image) {
-        Graphics g = image.createGraphics();
-        g.setFont(font);
-        final FontMetrics fontMetrics = g.getFontMetrics();
+    public List<String> addHeaderToImage(List<String> text, Font fontHeader, BufferedImage image) {
+        Graphics gHeader = image.createGraphics();
+        gHeader.setFont(fontHeader);
+        final FontMetrics fontMetricsHeader = gHeader.getFontMetrics();
 
         List<String> lines = new ArrayList<>();
+        String[] words = text.get(HEADER).split(" ");
+        String line = "";
 
-        for (String str : text) {
-            String[] words = str.split(" ");
-            String line = "";
-
-            for (int i = 0; i < words.length; i++) {
-                if (fontMetrics.stringWidth(line + words[i]) > image.getWidth() - 40) {
-                    lines.add(line);
-                    line = "";
-                }
-
-                line += words[i] + " ";
+        for (String word : words) {
+            if (fontMetricsHeader.stringWidth(line + word) > image.getWidth() - 100) {
+                lines.add(line);
+                line = "";
             }
-            lines.add(line);
+            line += word + " ";
         }
-
+        lines.add(line);
         return lines;
     }
 
+    public List<String> addDescriptionToImage(List<String> text, Font fontDescription, BufferedImage image) {
+        Graphics gDescription = image.createGraphics();
+        gDescription.setFont(fontDescription);
+        final FontMetrics fontMetricsDescription = gDescription.getFontMetrics();
+
+        List<String> lines = new ArrayList<>();
+        String[] words = text.get(DESCRIPTION).split(" ");
+        String line = "";
+
+        for (String word : words) {
+            if (fontMetricsDescription.stringWidth(line + word) > image.getWidth() - 100) {
+                lines.add(line);
+                line = "";
+            }
+            line += word + " ";
+        }
+        lines.add(line);
+        return lines;
+    }
+
+
     public static List<String> changeDescription(String text) {
-        String[] descriptionMultiLine = text.split("\\.");
+        String[] descriptionMultiLine = text.split("\\. ");
         String heading;
         String description = "";
         List<String> result = new ArrayList<>();
@@ -96,7 +128,11 @@ public class Questionnaire {
             heading = descriptionMultiLine[HEADER] + ".";
             result.add(heading);
             for (int i = 1; i < descriptionMultiLine.length; i++) {
-                description += descriptionMultiLine[i] + ".";
+                description += descriptionMultiLine[i];
+                if (!descriptionMultiLine[i].contains(".") &&!descriptionMultiLine[i].contains("!")
+                        &&!descriptionMultiLine[i].contains(",") ) {
+                    description += ". ";
+                }
             }
             result.add(description);
         } else {
@@ -105,7 +141,7 @@ public class Questionnaire {
             result.add(heading);
             if (descriptionOneLine.length > 1) {
                 for (int i = 1; i < descriptionOneLine.length; i++) {
-                    description += descriptionOneLine[i];
+                    description += descriptionOneLine[i] + " ";
                 }
             }
             result.add(description);

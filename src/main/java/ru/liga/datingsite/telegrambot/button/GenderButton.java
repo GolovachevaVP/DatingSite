@@ -20,13 +20,12 @@ public class GenderButton {
         InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
         List<InlineKeyboardButton> rowInLine = new ArrayList<>();
-        var genderMaleButton = new InlineKeyboardButton();
 
+        InlineKeyboardButton genderMaleButton = new InlineKeyboardButton();
         genderMaleButton.setText("Сударъ");
         genderMaleButton.setCallbackData("Сударъ");
 
-        var genderFemaleButton = new InlineKeyboardButton();
-
+        InlineKeyboardButton genderFemaleButton = new InlineKeyboardButton();
         genderFemaleButton.setText("Сударыня");
         genderFemaleButton.setCallbackData("Сударыня");
 

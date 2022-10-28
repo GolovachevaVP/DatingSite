@@ -12,6 +12,4 @@ public class DataBase {
     String description;
     GenderTypeEnum preferences;
     BotStateEnum state;
-
-
 }
